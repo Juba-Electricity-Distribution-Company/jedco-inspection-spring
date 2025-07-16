@@ -47,6 +47,7 @@ public class InspectionServiceImpl implements InspectionService {
     private final InspectionMapper inspectionMapper;
     private final DateConverter dateConverter;
     private final PagingService pagingService;
+    private final ProblemTypeRepository problemTypeRepository;
 
     @Value("${file.upload-dir}")
     private String uploadDir;
@@ -84,6 +85,7 @@ public class InspectionServiceImpl implements InspectionService {
             inspection.setCiuNo(insertDto.ciuNumber());
             inspection.setConnectionType(insertDto.connType());
             inspection.setTariffCategory(insertDto.tarifCat());
+            inspection.setCtRatio(insertDto.ctRatio());
             inspection.setLocation(insertDto.location());
             inspection.setFeeder(insertDto.feeder());
             inspection.setTxNo(insertDto.txNo());
@@ -554,6 +556,12 @@ public class InspectionServiceImpl implements InspectionService {
             this.asyncService.postHistory(taskHistory);
         }
         return new ResponseDTO(true,"Remark updated Successfully");
+    }
+
+    @Override
+    public List<InspectionCodesResponse> inspectionCodesByProblemTypes(List<Long> problemTypeIds) {
+        List<InspectionCode> inspectionCodes=inspectionCodeRepository.findDistinctByProblemTypeIds(problemTypeIds);
+        return inspectionCodes.stream().map(inspectionCodeMapper::toResponse).toList();
     }
 
 

@@ -30,4 +30,6 @@ public interface InspectionService {
     ResponseDTO updateCodeResult(Long inspectionId, List<CodeResultUpdateRequest> codeResults, String username);
 
     ResponseDTO updateRemark(Long inspectionId, UpdateRemarkRequest remark, String username);
+
+    List<InspectionCodesResponse> inspectionCodesByProblemTypes(List<Long> problemTypeIds);
 }

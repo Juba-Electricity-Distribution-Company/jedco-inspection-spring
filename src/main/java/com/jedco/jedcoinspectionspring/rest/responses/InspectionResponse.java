@@ -18,6 +18,7 @@ public record InspectionResponse(
         String ciuNumber,
         String connType,
         String tarifCat,
+        String ctRatio,
         @JsonFormat(shape = JsonFormat.Shape.NUMBER)
         Date registeredDate,
         @JsonFormat(shape = JsonFormat.Shape.NUMBER)

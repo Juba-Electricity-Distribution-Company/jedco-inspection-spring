@@ -1,9 +1,13 @@
 package com.jedco.jedcoinspectionspring.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import lombok.*;
+
+import java.util.Set;
 
 @Getter
 @Setter
@@ -22,4 +26,8 @@ public class InspectionCode extends BaseEntity {
 
     @Column(name="description", length=100)
     private String description;
+
+    @JsonBackReference
+    @ManyToMany(mappedBy = "inspectionCodes")
+    private Set<ProblemType> problemTypes;
 }

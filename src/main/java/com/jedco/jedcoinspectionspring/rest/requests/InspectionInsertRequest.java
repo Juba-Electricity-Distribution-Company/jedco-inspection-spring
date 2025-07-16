@@ -13,6 +13,7 @@ public record InspectionInsertRequest(
         String ciuNumber,
         String connType,
         String tarifCat,
+        String ctRatio,
         String feeder,
         String txNo,
         Double latitude,

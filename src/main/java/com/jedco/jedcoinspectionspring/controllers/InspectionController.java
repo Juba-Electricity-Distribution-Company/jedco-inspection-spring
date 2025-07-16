@@ -37,6 +37,11 @@ public class InspectionController {
         return inspectionService.inspectionCodesList(meterType);
     }
 
+    @GetMapping("/getInspectionCodesByProblemTypes")
+    public List<InspectionCodesResponse> getInspectionCodesByProblemTypes(@RequestParam("problemTypeIds") List<Long> problemTypeIds) {
+        return inspectionService.inspectionCodesByProblemTypes(problemTypeIds);
+    }
+
     @PostMapping("/insertInspection")
     @PreAuthorize("hasAnyAuthority('REGISTER_INSPECTION')")
     public ResponseDTO register(@RequestBody InspectionInsertRequest insertDto) {

@@ -38,6 +38,9 @@ public class Inspection extends BaseEntity{
     @Column(name="ciu_no", length=100)
     private String ciuNo;
 
+    @Column(name="ct_ratio", length = 20)
+    private String ctRatio;
+
     @Column(name="conn_type", nullable=false, length=100)
     private String connectionType;
 
