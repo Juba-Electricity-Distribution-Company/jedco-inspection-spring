@@ -7,6 +7,7 @@ public record CustomerResponse(
         String connectionType,
         String tariff,
         String feeder,
-        String tx_no
+        String tx_no,
+        String ctRatio
 ) {
 }

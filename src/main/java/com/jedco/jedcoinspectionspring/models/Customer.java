@@ -36,4 +36,7 @@ public class Customer {
     @Column(name="tx_no", length=100)
     private String txNo;
 
+    @Column(name="ct_ratio", length = 100)
+    private String ctRatio;
+
 }
