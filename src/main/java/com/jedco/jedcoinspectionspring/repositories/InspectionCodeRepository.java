@@ -14,4 +14,16 @@ public interface InspectionCodeRepository extends JpaRepository<InspectionCode,L
     List<InspectionCode> findDistinctByProblemTypeIds(@Param("problemTypeIds") List<Long> problemTypeIds);
 
     List<InspectionCode> findAllByMeterTypeOrderByOrderIndexAscIdAsc(String meterType);
+
+    @Query("""
+    SELECT DISTINCT ic 
+    FROM InspectionCode ic 
+    JOIN ic.problemTypes pt 
+    WHERE pt.id IN :problemTypeIds
+    ORDER BY ic.orderIndex ASC, ic.id ASC
+""")
+    List<InspectionCode> findDistinctByProblemTypeIdsOrderByOrderIndexAscIdAsc(
+            @Param("problemTypeIds") List<Long> problemTypeIds
+    );
+
 }

@@ -561,7 +561,8 @@ public class InspectionServiceImpl implements InspectionService {
 
     @Override
     public List<InspectionCodesResponse> inspectionCodesByProblemTypes(List<Long> problemTypeIds) {
-        List<InspectionCode> inspectionCodes=inspectionCodeRepository.findDistinctByProblemTypeIds(problemTypeIds);
+//        List<InspectionCode> inspectionCodes=inspectionCodeRepository.findDistinctByProblemTypeIds(problemTypeIds);
+        List<InspectionCode> inspectionCodes=inspectionCodeRepository.findDistinctByProblemTypeIdsOrderByOrderIndexAscIdAsc(problemTypeIds);
         return inspectionCodes.stream().map(inspectionCodeMapper::toResponse).toList();
     }
 
