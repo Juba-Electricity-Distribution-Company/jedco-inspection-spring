@@ -10,10 +10,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.Named;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface InspectionMapper {
@@ -29,11 +26,35 @@ public interface InspectionMapper {
     @Mapping(target = "completedDate", source = "completedOn")
     @Mapping(target = "ciuNumber", source = "ciuNo")
     @Mapping(target = "approvedDate", source = "approvedOn")
-    @Mapping(target = "codeResultList", source = "codeResults")
+    @Mapping(target = "codeResultList", source = "codeResults", qualifiedByName = "mapSortedCodeResults")
     @Mapping(target = "checkListResultList", source = "installationChecklists")
     @Mapping(target = "filePath", source = "inspectionFiles", qualifiedByName = "mapFilePath")
     @Mapping(target = "assesmentSubmitted", source = "assessments", qualifiedByName = "mapAssessments")
     InspectionResponse toInspectionResponse(Inspection inspection);
+
+    @Named("mapSortedCodeResults")
+    default List<CodeResultResponse> mapSortedCodeResults(Set<CodeResult> codeResults) {
+        if (codeResults == null || codeResults.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        return codeResults.stream()
+                .sorted(
+                        Comparator
+                                // Primary: orderIndex (0 is allowed)
+                                .comparing((CodeResult cr) ->
+                                        cr.getInspectionCode().getOrderIndex() == null
+                                                ? 0
+                                                : cr.getInspectionCode().getOrderIndex()
+                                )
+                                // Secondary: inspectionCode.id
+                                .thenComparing(cr -> cr.getInspectionCode().getId())
+                )
+                .map(this::toCodeResultResponse)
+                .toList();
+    }
+
+
     @Named("mapRegisteredBy")
     default String mapRegisteredBy (User user){
         return user.getFirstName()+" "+user.getLastName();
