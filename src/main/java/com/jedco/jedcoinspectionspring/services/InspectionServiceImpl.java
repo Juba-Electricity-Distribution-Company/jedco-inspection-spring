@@ -232,7 +232,8 @@ public class InspectionServiceImpl implements InspectionService {
 
     @Override
     public List<InspectionCodesResponse> inspectionCodesList(String meterType) {
-        var inspectionCodes= inspectionCodeRepository.findAllByMeterType(meterType);
+//        var inspectionCodes= inspectionCodeRepository.findAllByMeterType(meterType);
+        var inspectionCodes = inspectionCodeRepository.findAllByMeterTypeOrderByOrderIndexAscIdAsc(meterType);
         return inspectionCodes.stream().map(inspectionCodeMapper::toResponse).toList();
     }
 
