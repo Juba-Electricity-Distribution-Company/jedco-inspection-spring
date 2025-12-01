@@ -101,7 +101,7 @@ public interface InspectionMapper {
     @Mapping(target = "metterNumber", source = "meterNo")
     @Mapping(target = "filePath", source = "inspectionFiles", qualifiedByName = "mapFilePath")
     @Mapping(target = "connType", source = "connectionType")
-    @Mapping(target = "codeResultList", source = "codeResults")
+    @Mapping(target = "codeResultList", source = "codeResults", qualifiedByName = "mapSortedCodeResults")
     @Mapping(target = "ciuNumber", source = "ciuNo")
     @Mapping(target = "checkListResultList", source = "installationChecklists")
     @Mapping(target = "assignmentNote", source = "salesAssignments", qualifiedByName = "mapAssignmentNote")
