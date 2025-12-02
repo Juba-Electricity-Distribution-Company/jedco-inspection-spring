@@ -27,6 +27,9 @@ public class InspectionCode extends BaseEntity {
     @Column(name="description", length=100)
     private String description;
 
+    @Column(name="order_index")
+    private Integer orderIndex;
+
     @JsonBackReference
     @ManyToMany(mappedBy = "inspectionCodes")
     private Set<ProblemType> problemTypes;

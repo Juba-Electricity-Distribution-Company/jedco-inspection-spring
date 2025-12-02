@@ -169,9 +169,9 @@ public class InspectionServiceImpl implements InspectionService {
     }
 
     @Override
-    public AdminInspectionResponse adminInspectionsListByDate(String startDateString, String endDateString,String customerName,String meterNumber,List<Long> statuses,String problemType, int page, int limit,String sort) {
+    public AdminInspectionResponse adminInspectionsListByDate(String startDateString, String endDateString,String customerName,String meterNumber,String phoneNumber,List<Long> statuses,String problemType, int page, int limit,String sort) {
         Pageable pageable = pagingService.createPageable(page, limit, sort);
-        Page<Inspection> inspectionPage=getAllInspectionsData(startDateString,endDateString,customerName,meterNumber,statuses,problemType,pageable);
+        Page<Inspection> inspectionPage=getAllInspectionsData(startDateString,endDateString,customerName,meterNumber,phoneNumber,statuses,problemType,pageable);
         List<InspectionResponse> inspectionResponses = inspectionPage.getContent().stream()
                 .map(inspectionMapper::toInspectionResponse)
                 .toList();
@@ -180,7 +180,7 @@ public class InspectionServiceImpl implements InspectionService {
 
     }
 
-    private Page<Inspection> getAllInspectionsData(String startDateString, String endDateString, String customerName, String meterNumber, List<Long> statuses, String problemType, Pageable pageable) {
+    private Page<Inspection> getAllInspectionsData(String startDateString, String endDateString, String customerName, String meterNumber, String phoneNumber, List<Long> statuses, String problemType, Pageable pageable) {
         Day day = dateConverter.convertBetweenDays(startDateString, endDateString);
         Long deletedStatus = 3L;
         Page<Inspection> inspectionPage;
@@ -203,6 +203,10 @@ public class InspectionServiceImpl implements InspectionService {
             spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.like(criteriaBuilder.lower(root.get("meterNo")), "%" + meterNumber.toLowerCase() + "%"));
         }
 
+        if (phoneNumber != null && !phoneNumber.isEmpty()) {
+            spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.like(criteriaBuilder.lower(root.get("phoneNo")), "%" + phoneNumber.toLowerCase() + "%"));
+        }
+
         if (problemType != null && !problemType.isEmpty()) {
             spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.like(criteriaBuilder.lower(root.get("problemTypes")),"%"+problemType.toLowerCase()+"%"));
         }
@@ -212,9 +216,9 @@ public class InspectionServiceImpl implements InspectionService {
         return inspectionPage;
     }
     // Method to export data to Excel
-    public byte[] exportInspectionsToExcel(String startDateString, String endDateString, String customerName, String meterNumber, List<Long> statuses,String problemType, String sort) {
+    public byte[] exportInspectionsToExcel(String startDateString, String endDateString, String customerName, String meterNumber, String phoneNumber, List<Long> statuses,String problemType, String sort) {
         Pageable pageable = pagingService.createPageable(sort);
-        Page<Inspection> inspectionPage=getAllInspectionsData(startDateString,endDateString,customerName,meterNumber,statuses,problemType,pageable);
+        Page<Inspection> inspectionPage=getAllInspectionsData(startDateString,endDateString,customerName,meterNumber,phoneNumber,statuses,problemType,pageable);
         List<InspectionResponse> inspections = inspectionPage.getContent().stream()
                 .map(inspectionMapper::toInspectionResponse)
                 .toList();
@@ -232,7 +236,8 @@ public class InspectionServiceImpl implements InspectionService {
 
     @Override
     public List<InspectionCodesResponse> inspectionCodesList(String meterType) {
-        var inspectionCodes= inspectionCodeRepository.findAllByMeterType(meterType);
+//        var inspectionCodes= inspectionCodeRepository.findAllByMeterType(meterType);
+        var inspectionCodes = inspectionCodeRepository.findAllByMeterTypeOrderByOrderIndexAscIdAsc(meterType);
         return inspectionCodes.stream().map(inspectionCodeMapper::toResponse).toList();
     }
 
@@ -560,7 +565,8 @@ public class InspectionServiceImpl implements InspectionService {
 
     @Override
     public List<InspectionCodesResponse> inspectionCodesByProblemTypes(List<Long> problemTypeIds) {
-        List<InspectionCode> inspectionCodes=inspectionCodeRepository.findDistinctByProblemTypeIds(problemTypeIds);
+//        List<InspectionCode> inspectionCodes=inspectionCodeRepository.findDistinctByProblemTypeIds(problemTypeIds);
+        List<InspectionCode> inspectionCodes=inspectionCodeRepository.findDistinctByProblemTypeIdsOrderByOrderIndexAscIdAsc(problemTypeIds);
         return inspectionCodes.stream().map(inspectionCodeMapper::toResponse).toList();
     }
 

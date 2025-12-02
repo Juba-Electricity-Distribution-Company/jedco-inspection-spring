@@ -76,9 +76,10 @@ public class InspectionController {
                                                              @RequestParam(value = "metterNumber", required = false) String meterNumber,
                                                              @RequestParam(value = "statuses", required = false) List<Long> statuses,
                                                              @RequestParam(value = "problemType", required = false) String problemType,
+                                                             @RequestParam(value = "phoneNumber", required = false) String phoneNumber,
                                                              @RequestParam(value = "sort", required = false) String sort
                                                              ) {
-        return this.inspectionService.adminInspectionsListByDate(startDate, endDate,customerName,meterNumber,statuses,problemType, page,limit,sort);
+        return this.inspectionService.adminInspectionsListByDate(startDate, endDate,customerName,meterNumber,phoneNumber,statuses,problemType, page,limit,sort);
     }
 
     @GetMapping("/exportAdminToExcel")
@@ -87,11 +88,12 @@ public class InspectionController {
             @RequestParam(value = "endDate", required = false) String endDate,
             @RequestParam(value = "customerName", required = false) String customerName,
             @RequestParam(value = "meterNumber", required = false) String meterNumber,
+            @RequestParam(value = "phoneNumber", required = false) String phoneNumber,
             @RequestParam(value = "statuses", required = false) List<Long> statuses,
             @RequestParam(value = "problemType", required = false) String problemType,
             @RequestParam(value = "sort", required = false) String sort
     ) {
-        byte[] excelData = inspectionService.exportInspectionsToExcel(startDate, endDate, customerName, meterNumber, statuses,problemType, sort);
+        byte[] excelData = inspectionService.exportInspectionsToExcel(startDate, endDate, customerName, meterNumber,phoneNumber, statuses,problemType, sort);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
         headers.setContentDispositionFormData("attachment", "inspections.xlsx");
