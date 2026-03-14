@@ -104,63 +104,112 @@ public class AssessmentServiceImpl implements AssessmentService {
     @Override
     public ResponseDTO updateAssessment(Long inspectionId, LoadAssessmentUpdateRequest request, String username) {
 
-        if(request.id()==null){
-            List<CustomerLoadInsertRequest> loadInsertRequests= request
+        if (request.id() == null) {
+            List<CustomerLoadInsertRequest> loadInsertRequests = request
                     .customerLoadUpdateRequestList()
-                    .stream().map(assessmentMapper::toCustomerLoadInsertRequest).toList();
-            LoadAssessmentInsertRequest insertRequest= new LoadAssessmentInsertRequest(request.customerType()
-                    ,request.presentedDocument()
-                    ,"Inspection",inspectionId,loadInsertRequests);
-            return insertAssessment(insertRequest,username);
+                    .stream()
+                    .map(assessmentMapper::toCustomerLoadInsertRequest)
+                    .toList();
+
+            LoadAssessmentInsertRequest insertRequest = new LoadAssessmentInsertRequest(
+                    request.customerType(),
+                    request.presentedDocument(),
+                    "Inspection",
+                    inspectionId,
+                    loadInsertRequests
+            );
+
+            return insertAssessment(insertRequest, username);
         }
+
         Optional<Inspection> optionalInspection = inspectionRepository.findById(inspectionId);
         if (optionalInspection.isEmpty()) {
             return new ResponseDTO(false, "Inspection not found!");
         }
+
         Optional<User> optionalUser = userRepository.findByUsername(username);
         if (optionalUser.isEmpty()) {
             return new ResponseDTO(false, "User not found!");
         }
-        Optional<InspectionAssessment> optionalInspectionAssessment=assessmentRepository.findById(request.id());
-        if(optionalInspectionAssessment.isEmpty()){
-            return new ResponseDTO(false,"Assessment not found");
+
+        Optional<InspectionAssessment> optionalInspectionAssessment = assessmentRepository.findById(request.id());
+        if (optionalInspectionAssessment.isEmpty()) {
+            return new ResponseDTO(false, "Assessment not found");
         }
-        var assessment=optionalInspectionAssessment.get();
+
+        var assessment = optionalInspectionAssessment.get();
         User user = optionalUser.get();
         Inspection inspection = optionalInspection.get();
+
         StringBuilder additionalNoteBuilder = new StringBuilder();
         additionalNoteBuilder.append("Updated fields:").append(System.lineSeparator());
-        if(!assessment.getCustomerType().equals(request.customerType())){
-            additionalNoteBuilder.append("Customer Type: ").append(assessment.getCustomerType()).append(" -> ").append(request.customerType()).append(System.lineSeparator());
+
+        if (!Objects.equals(assessment.getCustomerType(), request.customerType())) {
+            additionalNoteBuilder.append("Customer Type: ")
+                    .append(assessment.getCustomerType())
+                    .append(" -> ")
+                    .append(request.customerType())
+                    .append(System.lineSeparator());
+
             assessment.setCustomerType(request.customerType());
         }
-        if(!assessment.getPresentedDocument().equals(request.presentedDocument())){
-            additionalNoteBuilder.append("Presented Document: ").append(assessment.getPresentedDocument()).append(" -> ").append(request.presentedDocument()).append(System.lineSeparator());
+
+        if (!Objects.equals(assessment.getPresentedDocument(), request.presentedDocument())) {
+            additionalNoteBuilder.append("Presented Document: ")
+                    .append(assessment.getPresentedDocument())
+                    .append(" -> ")
+                    .append(request.presentedDocument())
+                    .append(System.lineSeparator());
+
             assessment.setPresentedDocument(request.presentedDocument());
         }
-        if(!assessment.getReason().equals(request.reason())){
-            additionalNoteBuilder.append("Reason: ").append(assessment.getReason()).append(" -> ").append(request.reason()).append(System.lineSeparator());
+
+        if (!Objects.equals(assessment.getReason(), request.reason())) {
+            additionalNoteBuilder.append("Reason: ")
+                    .append(assessment.getReason())
+                    .append(" -> ")
+                    .append(request.reason())
+                    .append(System.lineSeparator());
+
             assessment.setReason(request.reason());
         }
-        List<Long> requestCustLoadIdList= request.customerLoadUpdateRequestList().stream().map(CustomerLoadUpdateRequest::id).toList();
-        for(var custLoad:assessment.getCustomerLoads()){
-            if(!requestCustLoadIdList.contains(custLoad.getId())){
+
+        List<Long> requestCustLoadIdList = request.customerLoadUpdateRequestList()
+                .stream()
+                .map(CustomerLoadUpdateRequest::id)
+                .toList();
+
+        Iterator<CustomerLoad> iterator = assessment.getCustomerLoads().iterator();
+
+        while (iterator.hasNext()) {
+            CustomerLoad custLoad = iterator.next();
+
+            if (!requestCustLoadIdList.contains(custLoad.getId())) {
                 additionalNoteBuilder.append("Deleted Customer Load: ")
                         .append(custLoad.getEquipment().getName())
                         .append(System.lineSeparator());
-                assessment.getCustomerLoads().remove(custLoad);
+
+                iterator.remove();
                 customerLoadRepository.delete(custLoad);
             }
         }
-        for(var custLoadRequest: request.customerLoadUpdateRequestList()){
+
+        for (var custLoadRequest : request.customerLoadUpdateRequestList()) {
+
             CustomerLoad customerLoad;
-            if(custLoadRequest.id()!=null){
-                Optional<CustomerLoad> optionalCustomerLoad= customerLoadRepository.findById(custLoadRequest.id());
-                if(optionalCustomerLoad.isEmpty()){
-                    return new ResponseDTO(false,"Customer Load not found!");
+
+            if (custLoadRequest.id() != null) {
+
+                Optional<CustomerLoad> optionalCustomerLoad = customerLoadRepository.findById(custLoadRequest.id());
+
+                if (optionalCustomerLoad.isEmpty()) {
+                    return new ResponseDTO(false, "Customer Load not found!");
                 }
-                customerLoad=optionalCustomerLoad.get();
-                if((customerLoad.getPowerRate()==null && custLoadRequest.powerRate()!=null) || (!customerLoad.getPowerRate().equals(custLoadRequest.powerRate()))){
+
+                customerLoad = optionalCustomerLoad.get();
+
+                if (!Objects.equals(customerLoad.getPowerRate(), custLoadRequest.powerRate())) {
+
                     additionalNoteBuilder.append("Power Rate of Equipment ")
                             .append(customerLoad.getEquipment().getName())
                             .append(" :")
@@ -168,9 +217,12 @@ public class AssessmentServiceImpl implements AssessmentService {
                             .append(" -> ")
                             .append(custLoadRequest.powerRate())
                             .append(System.lineSeparator());
+
                     customerLoad.setPowerRate(custLoadRequest.powerRate());
                 }
-                if((customerLoad.getQuantity()==null && custLoadRequest.quantity()!=null) || (!customerLoad.getQuantity().equals(custLoadRequest.quantity()))){
+
+                if (!Objects.equals(customerLoad.getQuantity(), custLoadRequest.quantity())) {
+
                     additionalNoteBuilder.append("Quantity of Equipment ")
                             .append(customerLoad.getEquipment().getName())
                             .append(" :")
@@ -178,9 +230,12 @@ public class AssessmentServiceImpl implements AssessmentService {
                             .append(" -> ")
                             .append(custLoadRequest.quantity())
                             .append(System.lineSeparator());
+
                     customerLoad.setQuantity(custLoadRequest.quantity());
                 }
-                if((customerLoad.getTotalKwh()==null && custLoadRequest.totalKwh()!=null) || (!customerLoad.getTotalKwh().equals(custLoadRequest.totalKwh()))){
+
+                if (!Objects.equals(customerLoad.getTotalKwh(), custLoadRequest.totalKwh())) {
+
                     additionalNoteBuilder.append("Total Kwh of Equipment ")
                             .append(customerLoad.getEquipment().getName())
                             .append(" :")
@@ -188,19 +243,25 @@ public class AssessmentServiceImpl implements AssessmentService {
                             .append(" -> ")
                             .append(custLoadRequest.totalKwh())
                             .append(System.lineSeparator());
+
                     customerLoad.setTotalKwh(custLoadRequest.totalKwh());
                 }
+
                 customerLoad.setUpdatedOn(new Date());
-            }
-            else{
-                if(custLoadRequest.equipmentId()==null){
-                    return new ResponseDTO(false,"Equipment is empty");
+
+            } else {
+
+                if (custLoadRequest.equipmentId() == null) {
+                    return new ResponseDTO(false, "Equipment is empty");
                 }
-                Optional<Equipment> optionalEquipment= equipmentRepository.findById(custLoadRequest.equipmentId());
-                if(optionalEquipment.isEmpty()){
-                    return new ResponseDTO(false,"Equipment not found!");
+
+                Optional<Equipment> optionalEquipment = equipmentRepository.findById(custLoadRequest.equipmentId());
+
+                if (optionalEquipment.isEmpty()) {
+                    return new ResponseDTO(false, "Equipment not found!");
                 }
-                customerLoad= new CustomerLoad();
+
+                customerLoad = new CustomerLoad();
                 customerLoad.setInspectionAssesment(assessment);
                 customerLoad.setEquipment(optionalEquipment.get());
                 customerLoad.setPowerRate(custLoadRequest.powerRate());
@@ -209,12 +270,15 @@ public class AssessmentServiceImpl implements AssessmentService {
                 customerLoad.setRegisteredOn(new Date());
                 customerLoad.setUser(user);
                 customerLoad.setStatus(statusRepository.findById(1L).get());
+
                 additionalNoteBuilder.append("Add Customer Load :")
                         .append(optionalEquipment.get().getName())
                         .append(System.lineSeparator());
             }
+
             customerLoadRepository.save(customerLoad);
         }
+
         assessmentRepository.save(assessment);
 
         TaskHistory taskHistory = new TaskHistory();
@@ -224,8 +288,9 @@ public class AssessmentServiceImpl implements AssessmentService {
         taskHistory.setActionType("Assessment updated");
         taskHistory.setHistoryDetails(user.getFirstName() + " " + user.getLastName() + " Updated Code List");
         taskHistory.setAdditionalNote(additionalNoteBuilder.toString());
+
         this.asyncService.postHistory(taskHistory);
 
-        return new ResponseDTO(true,"Assessment updated successfully!");
+        return new ResponseDTO(true, "Assessment updated successfully!");
     }
 }
