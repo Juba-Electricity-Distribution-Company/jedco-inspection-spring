@@ -91,10 +91,16 @@ The controller entry routes are `/inspection`, `/inspection_sales`, and `/inspec
 java --enable-preview -jar target/jedco-inspection-spring-0.0.1-SNAPSHOT.jar
 ```
 
-The compiler enables Java 21 preview features, so the examples include the runtime flag. The current test suite contains a single `@SpringBootTest` context-load test, with no isolated test profile or embedded database. It requires the application configuration, a compatible database, and usable logging paths (or an external logging configuration). Packaging with tests skipped does not verify startup or integrations.
+The compiler enables Java 21 preview features, so the examples include the runtime flag. The `@SpringBootTest` context-load test has no isolated test profile or embedded database. It requires the application configuration, a compatible database, and usable logging paths (or an external logging configuration). Packaging with tests skipped does not verify startup or integrations. JWT filter tests run without a database or external integrations:
+
+```bash
+./mvnw -DargLine=--enable-preview -Dtest=JwtAuthenticationFilterTests test
+```
 
 ## API and security behavior
 
 Main endpoint groups include `/auth`, `/inspections`, `/assessment`, `/sales`, `/legal`, `/customerService`, `/conlogService`, `/inspectionFiles`, and `/taskHistory`, plus user, role, and reference-data endpoints. Route names are case-sensitive; some existing routes use mixed casing such as `/User` and `/UserRole`.
 
 Authentication endpoints are `POST /auth/login` and `POST /auth/refresh`. JWT filtering and method security are configured, but the current HTTP security matcher permits all paths (`/**`). Inspect method-level authorization and the JWT filter before assuming an endpoint requires authentication. Several existing GET endpoints change state; do not use indiscriminate endpoint crawling for smoke tests.
+
+Expired or invalid Bearer JWTs are rejected by the authentication filter with HTTP 401 and the security error JSON fields `status`, `title`, and `message`. Expired tokens return `{"status":401,"title":"Unauthorized","message":"Authentication token has expired."}`. Invalid tokens use the message `Invalid authentication token.`. Rejected requests stop before reaching controllers. Token rejection diagnostics are logged at DEBUG without token contents or exception stack traces.
